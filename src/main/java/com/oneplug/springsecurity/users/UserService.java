@@ -65,6 +65,19 @@ public class UserService {
 
     public void registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Username is already taken!"));
+        }
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
+
+
         // Create new user's account
         User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
@@ -89,8 +102,6 @@ public class UserService {
                     case "mod":
                         Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(modRole);
-
                         break;
                     default:
                         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
@@ -99,10 +110,5 @@ public class UserService {
                 }
             });
         }
-        //user.setRoles(roles);
-        userRepository.save(user);
-
-
     }
-
 }
